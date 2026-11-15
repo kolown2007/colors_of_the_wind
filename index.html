@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Colors of the Wind</title>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --panel: #111827;
+            --card: #1f2937;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --shadow: rgba(15, 23, 42, 0.28);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(135deg, #020817, #0f172a 55%, #111827);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 32px 20px;
+        }
+
+        .gallery-wrap {
+            width: min(1200px, 100%);
+        }
+
+        h1 {
+            margin: 0 0 20px;
+            font-size: clamp(1.8rem, 2vw, 2.7rem);
+            text-align: center;
+            letter-spacing: 0.04em;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 18px;
+        }
+
+        .card {
+            background: rgba(31, 41, 55, 0.9);
+            border: 1px solid rgba(148, 163, 184, 0.18);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 12px 30px var(--shadow);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 18px 34px rgba(15, 23, 42, 0.35);
+        }
+
+        .card img {
+            display: block;
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            background: #0b1220;
+        }
+
+        .card .meta {
+            padding: 14px 14px 16px;
+        }
+
+        .status {
+            margin-top: 20px;
+            text-align: center;
+            color: var(--muted);
+            min-height: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="gallery-wrap">
+        <h1>Colors of the Wind: a project by KoloWn</h1>
+        <div id="cards" class="cards" aria-live="polite"></div>
+        <div id="status" class="status">Loading images...</div>
+    </div>
+
+    <script>
+        const apiUrl = 'https://kolown.net/api/pagasa/weather/last-image?limit=10';
+
+        const cardsContainer = document.getElementById('cards');
+        const statusEl = document.getElementById('status');
+
+        function renderImages(images) {
+            cardsContainer.innerHTML = images.map((imageUrl, index) => {
+                return `
+                    <article class="card" aria-label="Weather image ${index + 1}">
+                        <img src="${imageUrl}" alt="Weather image ${index + 1}" loading="lazy">
+                    </article>
+                `;
+            }).join('');
+
+            statusEl.textContent = `${images.length} image${images.length !== 1 ? 's' : ''} loaded`;
+        }
+
+        async function loadImages() {
+            try {
+                const response = await fetch(apiUrl, { mode: 'cors' });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const images = await response.json();
+                renderImages(images);
+            } catch (error) {
+                statusEl.textContent = 'Unable to load images right now.';
+                console.error(error);
+            }
+        }
+
+        loadImages();
+    </script>
+</body>
+</html>
